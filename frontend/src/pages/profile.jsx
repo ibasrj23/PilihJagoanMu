@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Navbar from '@/components/Navbar';
-import Card from '@/components/Card';
-import api from '@/lib/api';
-import useAuthStore from '@/lib/store';
-import { FiEdit2, FiUpload } from 'react-icons/fi';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Navbar from "@/components/Navbar";
+import Card from "@/components/Card";
+import api from "@/lib/api";
+import useAuthStore from "@/lib/store";
+import { FiEdit2, FiUpload } from "react-icons/fi";
 
 export default function Profile() {
   const router = useRouter();
@@ -12,24 +12,24 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
-    username: '',
-    phone: '',
-    address: '',
+    fullName: "",
+    username: "",
+    phone: "",
+    address: "",
   });
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
     setFormData({
-      fullName: user.fullName || '',
-      username: user.username || '',
-      phone: user.phone || '',
-      address: user.address || '',
+      fullName: user.fullName || "",
+      username: user.username || "",
+      phone: user.phone || "",
+      address: user.address || "",
     });
   }, [user]);
 
@@ -43,15 +43,15 @@ export default function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage('');
+    setMessage("");
 
     try {
-      const response = await api.put('/auth/profile', formData);
+      const response = await api.put("/auth/profile", formData);
       setUser(response.data.user);
-      setMessage('Profil berhasil diperbarui');
+      setMessage("Profil berhasil diperbarui");
       setIsEditing(false);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Gagal memperbarui profil');
+      setMessage(error.response?.data?.message || "Gagal memperbarui profil");
     } finally {
       setIsLoading(false);
     }
@@ -62,16 +62,16 @@ export default function Profile() {
     if (!file) return;
 
     const formDataFile = new FormData();
-    formDataFile.append('photo', file);
+    formDataFile.append("photo", file);
 
     try {
-      const response = await api.post('/auth/profile/photo', formDataFile, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const response = await api.post("/auth/profile/photo", formDataFile, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
       setUser(response.data.user);
-      setMessage('Foto profil berhasil diupload');
+      setMessage("Foto profil berhasil diupload");
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Gagal mengupload foto');
+      setMessage(error.response?.data?.message || "Gagal mengupload foto");
     }
   };
 
@@ -87,9 +87,9 @@ export default function Profile() {
           {message && (
             <div
               className={`mb-6 px-4 py-3 rounded-lg ${
-                message.includes('berhasil')
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-700'
+                message.includes("berhasil")
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
               }`}
             >
               {message}
@@ -103,13 +103,21 @@ export default function Profile() {
                 <div className="relative">
                   <img
                     src={
-                      user.profilePhoto ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        user.fullName
-                      )}&background=random`
+                      user.profilePhoto
+                        ? user.profilePhoto.startsWith("http")
+                          ? user.profilePhoto
+                          : `http://localhost:5000${user.profilePhoto}`
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            user.fullName,
+                          )}&background=random`
                     }
                     alt={user.fullName}
                     className="w-32 h-32 rounded-full object-cover border-4 border-blue-200"
+                    onError={(e) => {
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        user.fullName,
+                      )}&background=random`;
+                    }}
                   />
                   <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700">
                     <FiUpload />
@@ -121,7 +129,9 @@ export default function Profile() {
                     />
                   </label>
                 </div>
-                <p className="text-sm text-gray-600 mt-2">Klik untuk ganti foto</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Klik untuk ganti foto
+                </p>
               </div>
 
               {/* Profile Info */}
@@ -129,16 +139,18 @@ export default function Profile() {
                 <div className="space-y-4 mb-6">
                   <div>
                     <p className="text-sm text-gray-600">Email</p>
-                    <p className="text-lg font-semibold text-gray-900">{user.email}</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {user.email}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Role</p>
                     <p className="text-lg font-semibold text-gray-900">
-                      {user.role === 'super_admin'
-                        ? 'Super Admin'
-                        : user.role === 'admin'
-                        ? 'Admin'
-                        : 'Pengguna'}
+                      {user.role === "super_admin"
+                        ? "Super Admin"
+                        : user.role === "admin"
+                          ? "Admin"
+                          : "Pengguna"}
                     </p>
                   </div>
                   <div>
@@ -157,7 +169,7 @@ export default function Profile() {
                   onClick={() => setIsEditing(!isEditing)}
                   className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                 >
-                  <FiEdit2 /> {isEditing ? 'Batal' : 'Edit Profil'}
+                  <FiEdit2 /> {isEditing ? "Batal" : "Edit Profil"}
                 </button>
               </div>
             </div>
@@ -166,7 +178,9 @@ export default function Profile() {
           {/* Edit Form */}
           {isEditing && (
             <Card className="mt-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Profil</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Edit Profil
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -225,16 +239,18 @@ export default function Profile() {
                   disabled={isLoading}
                   className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400"
                 >
-                  {isLoading ? 'Sedang menyimpan...' : 'Simpan Perubahan'}
+                  {isLoading ? "Sedang menyimpan..." : "Simpan Perubahan"}
                 </button>
               </form>
             </Card>
           )}
 
           {/* Voting History */}
-          {user.role === 'user' && (
+          {user.role === "user" && (
             <Card className="mt-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Riwayat Voting</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Riwayat Voting
+              </h2>
               <p className="text-gray-600">
                 Voting Anda disimpan dengan aman dan bersifat pribadi
               </p>
