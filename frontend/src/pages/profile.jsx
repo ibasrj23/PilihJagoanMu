@@ -98,7 +98,6 @@ export default function Profile() {
 
           <Card>
             <div className="flex flex-col md:flex-row gap-8">
-              {/* Photo Section */}
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <img

@@ -1,19 +1,46 @@
-import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import useAuthStore from '@/lib/store';
-import { FiLogOut, FiBell, FiUser, FiMenu, FiX } from 'react-icons/fi';
-import { useState } from 'react';
+import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import useAuthStore from "@/lib/store";
+import { FiLogOut, FiBell, FiUser, FiMenu, FiX } from "react-icons/fi";
+import { useState } from "react";
+import NotificationCenter from "./NotificationCenter"; // Pastikan path filenya benar
 
 export default function Navbar() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [showNotif, setShowNotif] = useState(false); // Saklar buat buka notif
+
+  // Dummy data atau ambil dari store jika ada
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: "Selamat Datang!",
+      message: "Jangan lupa berikan suara Anda hari ini.",
+      isRead: false,
+      createdAt: new Date(),
+    },
+  ]);
 
   const handleLogout = () => {
     logout();
-    localStorage.removeItem('token');
-    router.push('/login');
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  const handleMarkAsRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
+    );
+  };
+
+  const getProfilePhoto = () => {
+    if (user?.profilePhoto) {
+      if (user.profilePhoto.startsWith("http")) return user.profilePhoto;
+      return `http://localhost:5000${user.profilePhoto}`;
+    }
+    return null;
   };
 
   return (
@@ -34,22 +61,37 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-6">
             {user ? (
               <>
-                <Link href="/elections" className="text-gray-700 hover:text-blue-600">
+                <Link
+                  href="/elections"
+                  className="text-gray-700 hover:text-blue-600"
+                >
                   Pemilihan
                 </Link>
-                {user.role !== 'user' && (
-                  <Link href="/admin" className="text-gray-700 hover:text-blue-600">
+                {user.role !== "user" && (
+                  <Link
+                    href="/admin"
+                    className="text-gray-700 hover:text-blue-600"
+                  >
                     Admin
                   </Link>
                 )}
 
                 <div className="flex items-center gap-4">
-                  <button className="relative text-gray-700 hover:text-blue-600">
+                  {/* FIX: Tambah onClick untuk buka notifikasi */}
+                  <button
+                    onClick={() => setShowNotif(true)}
+                    className="relative text-gray-700 hover:text-blue-600 p-1"
+                  >
                     <FiBell size={20} />
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                    {notifications.some((n) => !n.isRead) && (
+                      <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    )}
                   </button>
 
-                  <Link href="/profile" className="text-gray-700 hover:text-blue-600">
+                  <Link
+                    href="/profile"
+                    className="text-gray-700 hover:text-blue-600"
+                  >
                     <FiUser size={20} />
                   </Link>
 
@@ -59,9 +101,16 @@ export default function Navbar() {
                   >
                     <FiLogOut size={20} />
                   </button>
-
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm">
-                    {user.fullName.charAt(0)}
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm overflow-hidden border border-blue-100">
+                    {getProfilePhoto() ? (
+                      <img
+                        src={getProfilePhoto()}
+                        alt="profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      user.fullName.charAt(0)
+                    )}
                   </div>
                 </div>
               </>
@@ -103,7 +152,7 @@ export default function Navbar() {
                 >
                   Pemilihan
                 </Link>
-                {user.role !== 'user' && (
+                {user.role !== "user" && (
                   <Link
                     href="/admin"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
@@ -143,6 +192,15 @@ export default function Navbar() {
           </div>
         )}
       </div>
+
+      {/* RENDER NOTIFICATION CENTER */}
+      {showNotif && (
+        <NotificationCenter
+          notifications={notifications}
+          onClose={() => setShowNotif(false)}
+          onMarkAsRead={handleMarkAsRead}
+        />
+      )}
     </nav>
   );
 }

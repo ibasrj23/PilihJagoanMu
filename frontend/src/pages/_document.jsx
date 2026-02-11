@@ -5,7 +5,6 @@ export default function Document() {
     <Html lang="id">
       <Head>
         <meta charSet="utf-8" />
-        {/* Baris viewport dihapus dari sini karena sudah dipindah ke _app.jsx */}
         <meta
           name="description"
           content="Platform pemilihan suara yang transparan dan real-time"
